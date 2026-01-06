@@ -464,49 +464,51 @@ const App: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-                      <div className="xl:col-span-3">
-                        {activePlan.disciplines.length === 0 ? (
-                          <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
-                            <Sparkles className="w-12 h-12 text-[#26C6A9] mx-auto mb-4" />
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">Sua jornada começa aqui</h3>
-                            <p className="text-gray-500 max-w-md mx-auto mb-8">Adicione sua primeira disciplina para começar a organizar seus tópicos de estudo.</p>
-                            <button 
-                              onClick={() => setIsDisciplineModalOpen(true)}
-                              className="bg-[#26C6A9] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#1fb397] transition-colors shadow-lg shadow-[#26C6A9]/20"
-                            >
-                              Adicionar Disciplina
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {activePlan.disciplines.map(discipline => {
-                              const completedCount = discipline.topics.filter(t => t.isCompleted).length;
-                              const totalCount = discipline.topics.length;
-                              const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+                    <div className="space-y-8">
+                      {activePlan.disciplines.length === 0 ? (
+                        <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
+                          <Sparkles className="w-12 h-12 text-[#26C6A9] mx-auto mb-4" />
+                          <h3 className="text-xl font-bold text-gray-800 mb-2">Sua jornada começa aqui</h3>
+                          <p className="text-gray-500 max-w-md mx-auto mb-8">Adicione sua primeira disciplina para começar a organizar seus tópicos de estudo.</p>
+                          <button 
+                            onClick={() => setIsDisciplineModalOpen(true)}
+                            className="bg-[#26C6A9] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#1fb397] transition-colors shadow-lg shadow-[#26C6A9]/20"
+                          >
+                            Adicionar Disciplina
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {activePlan.disciplines.map(discipline => {
+                            const completedCount = discipline.topics.filter(t => t.isCompleted).length;
+                            const totalCount = discipline.topics.length;
+                            const questionsResolved = activePlan.logs
+                              .filter(log => log.disciplineId === discipline.id)
+                              .reduce((sum, log) => sum + (log.questions?.correct || 0) + (log.questions?.wrong || 0), 0);
 
-                              return (
-                                <div key={discipline.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full">
-                                  <div 
-                                    className="px-6 py-4 flex items-center justify-between border-b"
-                                    style={{ borderTop: `4px solid ${discipline.color}` }}
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div 
-                                        className="w-3 h-3 rounded-full" 
-                                        style={{ backgroundColor: discipline.color }}
-                                      />
-                                      <h3 className="font-bold text-gray-800 text-lg">{discipline.name}</h3>
-                                    </div>
-                                    <div className="flex items-center gap-2">
+                            return (
+                              <div 
+                                key={discipline.id} 
+                                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group relative"
+                              >
+                                {/* Color accent on the left */}
+                                <div 
+                                  className="absolute left-0 top-0 bottom-0 w-1.5" 
+                                  style={{ backgroundColor: discipline.color }}
+                                />
+                                
+                                <div className="p-6">
+                                  <div className="flex items-center justify-between mb-8">
+                                    <h3 className="font-semibold text-gray-700 text-lg truncate pr-12">{discipline.name}</h3>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                       <button 
                                         onClick={() => {
                                           setEditingDiscipline(discipline);
                                           setIsDisciplineModalOpen(true);
                                         }}
-                                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="p-1.5 hover:bg-gray-100 rounded-md text-gray-400 hover:text-gray-600 transition-colors"
                                       >
-                                        <Edit3 className="w-4 h-4" />
+                                        <Edit3 className="w-3.5 h-3.5" />
                                       </button>
                                       <button 
                                         onClick={() => {
@@ -517,97 +519,76 @@ const App: React.FC = () => {
                                             } : p));
                                           }
                                         }}
-                                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                        className="p-1.5 hover:bg-gray-100 rounded-md text-gray-400 hover:text-red-500 transition-colors"
                                       >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-3.5 h-3.5" />
                                       </button>
                                     </div>
                                   </div>
-                                  
-                                  <div className="p-6 flex-1">
-                                    <div className="mb-6">
-                                      <div className="flex justify-between text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-                                        <span>Progresso</span>
-                                        <span>{completedCount}/{totalCount} Tópicos ({Math.round(progress)}%)</span>
-                                      </div>
-                                      <div className="w-full bg-gray-100 rounded-full h-1.5">
-                                        <div 
-                                          className="h-1.5 rounded-full transition-all duration-500" 
-                                          style={{ backgroundColor: discipline.color, width: `${progress}%` }}
-                                        />
+
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <div className="text-center">
+                                      <div className="text-2xl font-bold text-gray-800">{completedCount}</div>
+                                      <div className="text-[10px] leading-tight font-bold text-gray-400 uppercase tracking-tight">
+                                        Tópicos<br />Estudados
                                       </div>
                                     </div>
-
-                                    <div className="space-y-1 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                      {discipline.topics.length === 0 ? (
-                                        <p className="text-sm text-gray-400 text-center py-8 bg-gray-50 rounded-lg border border-dashed">Nenhum tópico cadastrado.</p>
-                                      ) : (
-                                        discipline.topics.map(topic => (
-                                          <div 
-                                            key={topic.id}
-                                            onClick={() => toggleTopicCompletion(discipline.id, topic.id)}
-                                            className={`group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${topic.isCompleted ? 'bg-gray-50 border-transparent opacity-60' : 'bg-white border-gray-100 hover:border-[#26C6A9] hover:shadow-sm'}`}
-                                          >
-                                            {topic.isCompleted ? (
-                                              <CheckCircle2 className="w-5 h-5 text-[#26C6A9]" />
-                                            ) : (
-                                              <Circle className="w-5 h-5 text-gray-300 group-hover:text-[#26C6A9]" />
-                                            )}
-                                            <span className={`text-sm flex-1 ${topic.isCompleted ? 'line-through text-gray-500' : 'text-gray-700 font-medium'}`}>
-                                              {topic.name}
-                                            </span>
-                                          </div>
-                                        ))
-                                      )}
+                                    <div className="text-center">
+                                      <div className="text-2xl font-bold text-gray-800">{totalCount}</div>
+                                      <div className="text-[10px] leading-tight font-bold text-gray-400 uppercase tracking-tight">
+                                        Tópicos<br />Totais
+                                      </div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="text-2xl font-bold text-gray-800">{questionsResolved}</div>
+                                      <div className="text-[10px] leading-tight font-bold text-gray-400 uppercase tracking-tight">
+                                        Questões<br />Resolvidas
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="xl:col-span-1">
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sticky top-24">
-                          <div className="flex items-center gap-2 mb-6 text-gray-700">
-                            <History className="w-5 h-5 text-[#26C6A9]" />
-                            <h3 className="font-bold">Histórico Recente</h3>
-                          </div>
-                          <div className="space-y-4">
-                            {!activePlan.logs || activePlan.logs.length === 0 ? (
-                              <div className="text-center py-8 px-4 border-2 border-dashed rounded-xl border-gray-100">
-                                <p className="text-sm text-gray-400">Nenhum registro de estudo ainda. Comece a estudar!</p>
                               </div>
-                            ) : (
-                              activePlan.logs.slice(0, 10).map(log => {
-                                const disc = activePlan.disciplines.find(d => d.id === log.disciplineId);
-                                const topic = disc?.topics.find(t => t.id === log.topicId);
-                                return (
-                                  <div key={log.id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(log.date).toLocaleDateString()}</span>
-                                      <span className="text-[10px] font-bold text-[#26C6A9] uppercase bg-[#26C6A9]/10 px-1.5 py-0.5 rounded">{log.category}</span>
-                                    </div>
-                                    <h4 className="text-sm font-bold text-gray-800 line-clamp-1">{disc?.name}</h4>
-                                    <p className="text-xs text-gray-500 line-clamp-1">{topic?.name || 'Tópico Geral'}</p>
-                                    <div className="flex items-center gap-3 mt-2">
-                                      <span className="flex items-center gap-1 text-[10px] font-semibold text-gray-400">
-                                        <Clock className="w-3 h-3" /> {log.duration}
-                                      </span>
-                                      {log.questions.correct > 0 && (
-                                        <span className="flex items-center gap-1 text-[10px] font-semibold text-[#26C6A9]">
-                                          <CheckCircle2 className="w-3 h-3" /> {log.questions.correct} acertos
-                                        </span>
-                                      )}
-                                    </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* History Section below the grid if desired, or keep as is */}
+                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mt-12">
+                        <div className="flex items-center gap-2 mb-6 text-gray-700">
+                          <History className="w-5 h-5 text-[#26C6A9]" />
+                          <h3 className="font-bold text-xl">Histórico Recente</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          {!activePlan.logs || activePlan.logs.length === 0 ? (
+                            <div className="col-span-full text-center py-12 px-4 border-2 border-dashed rounded-2xl border-gray-50">
+                              <p className="text-gray-400">Nenhum registro de estudo ainda. Comece a estudar!</p>
+                            </div>
+                          ) : (
+                            activePlan.logs.slice(0, 6).map(log => {
+                              const disc = activePlan.disciplines.find(d => d.id === log.disciplineId);
+                              const topic = disc?.topics.find(t => t.id === log.topicId);
+                              return (
+                                <div key={log.id} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(log.date).toLocaleDateString()}</span>
+                                    <span className="text-[10px] font-bold text-[#26C6A9] uppercase bg-[#26C6A9]/10 px-2 py-0.5 rounded">{log.category}</span>
                                   </div>
-                                );
-                              })
-                            )}
-                          </div>
-                          {activePlan.logs && activePlan.logs.length > 10 && (
-                            <button className="w-full mt-6 text-xs font-bold text-[#26C6A9] hover:underline">Ver todo histórico</button>
+                                  <h4 className="font-bold text-gray-800 line-clamp-1">{disc?.name}</h4>
+                                  <p className="text-xs text-gray-500 line-clamp-1 mb-3">{topic?.name || 'Tópico Geral'}</p>
+                                  <div className="flex items-center gap-4">
+                                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase">
+                                      <Clock className="w-3.5 h-3.5" /> {log.duration}
+                                    </span>
+                                    {log.questions && (log.questions.correct > 0 || log.questions.wrong > 0) && (
+                                      <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#26C6A9] uppercase">
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> {log.questions.correct} acertos
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })
                           )}
                         </div>
                       </div>

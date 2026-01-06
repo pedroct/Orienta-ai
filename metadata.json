@@ -1,0 +1,7 @@
+{
+  "name": "Orienta aí!",
+  "description": "Uma plataforma completa para estudantes de concursos públicos gerenciarem seus planos de estudos, disciplinas e tópicos com auxílio de IA.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
